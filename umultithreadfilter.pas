@@ -21,20 +21,25 @@ type
     procedure Execute; override;
   end;
 
-  procedure FilterGrayscale(const Bitmap: TBGRABitmap);
+  procedure FilterGrayscale(const Bitmap: TBGRABitmap; const numberOfThreads: integer = 2);
 
 implementation
 
-procedure FilterGrayscale(const Bitmap: TBGRABitmap);
+procedure FilterGrayscale(const Bitmap: TBGRABitmap; const numberOfThreads: integer = 2);
 var
-  i: integer;
-  arr: array[0..1] of TThreadFilter;
+  i, j: integer;
+  arr: array of TThreadFilter;
 begin
-  for i:=0 to 1 do
+  SetLength(arr, numberOfThreads);
+  j := Bitmap.Height div Length(arr);
+  for i:=0 to Length(arr)-1 do
   begin
     arr[i] := TThreadFilter.Create(True);
     arr[i].FreeOnTerminate := True;
-    arr[i].Pixels := Rect(0, (Bitmap.Height div 2) * i, Bitmap.Width, (Bitmap.Height div 2) * (i + 1));
+    if i <> Length(arr)-1 then
+      arr[i].Pixels := Rect(0, j * i, Bitmap.Width, j * (i + 1))
+    else
+      arr[i].Pixels := Rect(0, j * i, Bitmap.Width, Bitmap.Height);
     arr[i].Bitmap := Bitmap;
     arr[i].Execute;
   end;
