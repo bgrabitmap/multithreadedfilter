@@ -39,32 +39,21 @@ begin
   for i := Low(arr) to High(arr) do
   begin
     arr[i] := TThreadFilter.Create(True);
-    //arr[i].FreeOnTerminate := True;
     if i <> High(arr) then
       arr[i].Pixels := Rect(0, j * i, Bitmap.Width, j * (i + 1))
     else
       arr[i].Pixels := Rect(0, j * i, Bitmap.Width, Bitmap.Height);
     arr[i].Bitmap := Bitmap;
-    arr[i].Execute;
+    arr[i].Start;
   end;
 
-  {for j:=Low(arr) to High(arr) do
-    arr[i].WaitFor;}
-
-  repeat
-    AllFinished := True;
-    for j := Low(arr) to High(arr) do
-      if arr[j] <> nil then
-        if not arr[j].AFinished then
-          AllFinished := False;
-  until AllFinished;
+  for j:=Low(arr) to High(arr) do
+    arr[i].WaitFor;
 
   //Bitmap.InvalidateBitmap;
 
   for i := Low(arr) to High(arr) do
-  begin
     arr[i].Free;
-  end;
 end;
 
 { TThreadFilter }
