@@ -14,10 +14,12 @@ type
   TThreadFilter = class(TThread)
   private
     FBitmap: TBGRABitmap;
+    FFinished: boolean;
     FPixels: TRect;
   public
     property Pixels: TRect read FPixels write FPixels;
     property Bitmap: TBGRABitmap read FBitmap write FBitmap;
+    property AFinished: boolean read FFinished write FFinished;
     procedure Execute; override;
   end;
 
@@ -29,19 +31,38 @@ procedure FilterGrayscale(const Bitmap: TBGRABitmap; const numberOfThreads: inte
 var
   i, j: integer;
   arr: array of TThreadFilter;
+  AllFinished: boolean;
 begin
   SetLength(arr, numberOfThreads);
   j := Bitmap.Height div Length(arr);
-  for i:=0 to Length(arr)-1 do
+  for i:=Low(arr) to High(arr) do
   begin
     arr[i] := TThreadFilter.Create(True);
-    arr[i].FreeOnTerminate := True;
-    if i <> Length(arr)-1 then
+    //arr[i].FreeOnTerminate := True;
+    if i <> High(arr) then
       arr[i].Pixels := Rect(0, j * i, Bitmap.Width, j * (i + 1))
     else
       arr[i].Pixels := Rect(0, j * i, Bitmap.Width, Bitmap.Height);
     arr[i].Bitmap := Bitmap;
     arr[i].Execute;
+  end;
+
+  {for j:=Low(arr) to High(arr) do
+    arr[i].WaitFor;}
+
+  repeat
+    AllFinished:=true;
+    for j:=Low(arr) to High(arr) do
+      if arr[j]<>nil then
+         if not arr[j].AFinished then
+            AllFinished:=false;
+  until AllFinished;
+
+  //Bitmap.InvalidateBitmap;
+
+  for i:=0 to High(arr) do
+  begin
+    arr[i].Free;
   end;
 end;
 
@@ -53,6 +74,7 @@ var
   p: PBGRAPixel;
   c: byte;
 begin
+  FFinished := False;
   for y := Pixels.Top to Pixels.Bottom - 1 do
   begin
     p := Bitmap.Scanline[y];
@@ -65,6 +87,7 @@ begin
       Inc(p);
     end;
   end;
+  FFinished := True;
 end;
 
 end.
