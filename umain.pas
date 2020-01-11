@@ -34,12 +34,12 @@ implementation
 procedure TForm1.BGRAVirtualScreen1Redraw(Sender: TObject; Bitmap: TBGRABitmap);
 begin
   Bitmap.GradientFill(0, 0, Bitmap.Width, Bitmap.Height, BGRA(0,255,0), BGRA(0,0,255), gtLinear, PointF(0,0), PointF(Bitmap.Height, 0), dmSet);
-  FilterGrayscale(Bitmap, TThread.ProcessorCount);
+  FilterGrayscale(Bitmap, 2);
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  Self.Caption := IntToStr(TThread.ProcessorCount) + ' Threads';
+  Self.Caption := '2 Threads';
 end;
 
 end.
